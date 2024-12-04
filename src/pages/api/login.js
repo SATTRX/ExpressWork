@@ -5,10 +5,6 @@ const router = express.Router();
 router.post("/", async (req, res) => {
   const { usuario_email, usuario_password } = req.body;
 
-  if (!usuario_email || !usuario_password) {
-    return res.status(400).json({ error: "Faltan datos obligatorios" });
-  }
-
   try {
     const connection = await req.pool.getConnection();
     try {
@@ -31,7 +27,13 @@ router.post("/", async (req, res) => {
         return res.status(400).json({ error: "Contraseña incorrecta" });
       }
 
-      res.status(200).json({
+      // Establecer la sesión
+      req.session.userId = user.usuario_id;
+
+      // Esperar a que la sesión se guarde
+      await new Promise((resolve) => req.session.save(resolve));
+
+      res.json({
         userId: user.usuario_id,
         usuario_nombre: user.usuario_nombre,
         message: "Login exitoso",
@@ -40,6 +42,7 @@ router.post("/", async (req, res) => {
       connection.release();
     }
   } catch (error) {
+    console.error("Error en login:", error);
     res.status(500).json({ error: "Error interno del servidor" });
   }
 });

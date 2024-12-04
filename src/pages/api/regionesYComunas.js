@@ -1,4 +1,6 @@
-export const regionesYComunas = [
+const express = require("express");
+const router = express.Router();
+const regiones = [
   {
     region: "Región de Arica y Parinacota",
     comunas: ["Arica", "Camarones", "Putre", "General Lagos"],
@@ -422,4 +424,31 @@ export const regionesYComunas = [
   },
 ];
 
-export default regionesYComunas;
+// GET todas las regiones y sus comunas
+router.get("/", (req, res) => {
+  try {
+    res.json(regiones);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error al obtener las regiones y comunas" });
+  }
+});
+
+// GET comunas por región específica
+router.get("/:region", (req, res) => {
+  try {
+    const regionBuscada = decodeURIComponent(req.params.region);
+    const region = regiones.find((r) => r.region === regionBuscada);
+
+    if (region) {
+      res.json(region.comunas);
+    } else {
+      res.status(404).json({ error: "Región no encontrada" });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({ error: "Error al obtener las comunas" });
+  }
+});
+
+module.exports = router;
